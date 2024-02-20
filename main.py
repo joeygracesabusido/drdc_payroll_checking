@@ -30,6 +30,8 @@ def duraville_project():
                {"Code": '2001',"Transaction":'Gross Payroll'},
                {"Code": '2002',"Transaction":'SSS Table'},
                {"Code": '2003',"Transaction":'Payroll computation'},
+               {"Code": '2004',"Transaction":'Display Payroll Master List'},
+               {"Code": '2005',"Transaction":'Payroll computation 1st Cut-off'},
             
            
            
@@ -60,7 +62,10 @@ def duraville_project():
 
     elif ans == '2004':
         
-        pass      
+        return Payrollcomputation.excel_connection_payroll_masterfile()
+
+    elif ans == '2005':
+        return Payrollcomputation.payroll_comp_1st_cut_off()
 
     elif ans == 'x' or ans =='X':
         exit()
@@ -104,6 +109,34 @@ class Payrollcomputation():
         # print(data_df)
     
 
+    @staticmethod
+    def excel_connection_payroll_masterfile(): # this function is for connection of excel file data of Pyaroll master file
+        sheet_name = 'PAYROLL-MASTER-FILE'
+
+        data_df_master_file = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
+       
+       
+
+        pd.set_option('display.max_rows', None)
+
+        # print(data_df_master_file)
+
+        return data_df_master_file
+    
+    @staticmethod
+    def excel_connection_1st_cut_off(): # this function is for connectio of excel file data of 1st cut-off
+        sheet_name = 'PAYROLL-1ST-BATCH'
+
+        data_df_1st_batch = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
+       
+       
+
+        pd.set_option('display.max_rows', None)
+
+        # print(data_df_1st_batch)
+
+        return data_df_1st_batch
+
    
     
     @staticmethod
@@ -144,6 +177,62 @@ class Payrollcomputation():
 
         duraville_project()
 
+
+    @staticmethod
+    def payroll_comp_1st_cut_off(): # this function is for computing first cut-off
+
+        master_file = Payrollcomputation.excel_connection_payroll_masterfile()
+
+        cut_off_1st = Payrollcomputation.excel_connection_1st_cut_off()
+
+        semi_monthly_rate = master_file['BASIC_MONTHLY_PAY'] / 2
+        employee_id = master_file['EMPLOYEE_ID']
+
+        # Merge the two DataFrames based on the EMPLOYEE_ID column
+        merged_data = pd.merge(master_file, cut_off_1st, on='EMPLOYEE_ID', how='inner')
+
+        # Calculate semi-monthly rate
+        merged_data['SEMI_MONTHLY_RATE'] = merged_data['BASIC_MONTHLY_PAY'] / 2
+
+
+        # Calculate GROSS_PAY
+        merged_data['GROSS_PAY'] = (merged_data['SEMI_MONTHLY_RATE'] +
+                                    merged_data['LATE'] +
+                                    merged_data['NORMAL_WORKIG_DAY OT'] +
+                                    merged_data['ND_REGULAR_OT'] +
+                                    merged_data['TAX_REFUND']).fillna(0)  # fill NaN values with 0
+        
+        merged_data['TOTAL DEDUCTION'] = (merged_data['SSS_LOAN'] +
+                                    merged_data['HDMF_LOAN'].fillna(0) ) # fill NaN values with 0
+                                  
+        merged_data['NET PAY']  =   merged_data['GROSS_PAY']   -   merged_data['TOTAL DEDUCTION']               
+
+
+        # Select only the desired columns
+        # result_data = merged_data[['EMPLOYEE_ID', 'SEMI_MONTHLY_RATE'] +  list(cut_off_1st.columns)]
+        result_data = merged_data[['EMPLOYEE_ID','COMPANY', 'SEMI_MONTHLY_RATE','LATE','NORMAL_WORKIG_DAY OT',
+                                   'ND_REGULAR_OT','TAX_REFUND','GROSS_PAY',
+                                   'SSS_LOAN', 'HDMF_LOAN','TOTAL DEDUCTION','NET PAY'] ]
+        
+        
+
+
+        # Print or return the merged DataFrame
+        print(result_data)
+
+
+        # Print the sum of the GROSS_PAY column
+        print("Sum of GROSS_PAY:", result_data['GROSS_PAY'].sum())
+        print("Sum of NET_PAY:", result_data['NET PAY'].sum())
+
+
+        
+
+        
+       
+
+
+        duraville_project()
     
         
 
