@@ -21,8 +21,8 @@ def main_dashboard(): # this function is for displaying dashboard
     TransactionList = [
         
             
-               {"Code": '1000',"Transaction":'LDPC Transactions'},
-               {"Code": '2000',"Transaction":'LRCC Transactions'},
+               {"Code": '2000',"Transaction":'LDPC Transactions'},
+               {"Code": '3000',"Transaction":'LRCC Transactions'},
              
             
            
@@ -44,10 +44,10 @@ def main_dashboard(): # this function is for displaying dashboard
 
     ans = input('Please enter code for your Desire transaction: ')
 
-    if ans == '1000':
+    if ans == '2000':
         return lpdc_transaction()
     
-    elif ans == '2000':
+    elif ans == '3000':
         return lrcc_transaction()
 
     

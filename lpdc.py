@@ -8,6 +8,9 @@ import math
 
 from prettytable import PrettyTable
 
+import subprocess
+import xlsxwriter
+
 
 from datetime import date
 
@@ -80,8 +83,11 @@ class Payrollcomputation():
     @staticmethod
     def conn(): # this function is for set upo connection
         if platform.system().lower() == 'linux':
+            pass
             connection_path = '/home/joeysabusido/payroll_checking/drdc_payroll_checking/DRDC.xlsx'
         else:
+            pass
+
             connection_path = r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx'
 
         connection = pd.read_excel(connection_path)
@@ -91,9 +97,13 @@ class Payrollcomputation():
     @staticmethod
     def excel_connection_gross_pay():
 
+        
         sheet_name = 'Payroll-1'
+        file_path = 'DRDC.xlsx'
+        data_df = pd.read_excel(file_path,sheet_name=sheet_name)
+        
 
-        data_df = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
+        # data_df = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
         # data_df = pd.read_excel(r'/home/joeysabusido/payroll_checking/drdc_payroll_checking/DRDC.xlsx',sheet_name=sheet_name)
        
        
@@ -109,7 +119,9 @@ class Payrollcomputation():
 
         sheet_name = 'SSS'
 
-        data_df_sss = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
+        file_path = 'DRDC.xlsx'
+        data_df_sss = pd.read_excel(file_path,sheet_name=sheet_name)
+        # data_df_sss = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
         # data_df_sss = pd.read_excel(r'/home/joeysabusido/payroll_checking/drdc_payroll_checking/DRDC.xlsx',sheet_name=sheet_name)
        
        
@@ -131,7 +143,9 @@ class Payrollcomputation():
     def excel_connection_payroll_masterfile(): # this function is for connection of excel file data of Pyaroll master file
         sheet_name = 'PAYROLL-MASTER-FILE'
 
-        data_df_master_file = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
+        file_path = 'DRDC.xlsx'
+        data_df_master_file = pd.read_excel(file_path,sheet_name=sheet_name)
+        # data_df_master_file = pd.read_excel(r'C:\Users\Jerome\Desktop\Payrollcomp\DRDC.xlsx',sheet_name=sheet_name)
         # data_df_master_file = pd.read_excel(r'/home/joeysabusido/payroll_checking/drdc_payroll_checking/DRDC.xlsx',sheet_name=sheet_name)
        
 
@@ -275,6 +289,33 @@ class Payrollcomputation():
         print("Sum of NET_PAY:{:,.2f}".format(result_data['NET PAY'].sum()))
         print("Sum of SSS LOAN:{:,.2f}".format(result_data['SSS_LOAN'].sum()))
         print("Sum of HDMF LOAN:{:,.2f}".format(result_data['HDMF_LOAN'].sum()))
+
+
+        ans = input('Do you want to export to excel file: ').lower()
+
+        if ans == 'yes':
+            workbook = xlsxwriter.Workbook("payroll_comp_1st_cut_off.xlsx")
+            worksheet = workbook.add_worksheet('payroll_comp_1st_cut_off')
+
+            # Writing headers
+            headers = result_data.columns.tolist()
+
+            for col_num, header in enumerate(headers):
+                worksheet.write(0, col_num, header)
+
+            # Writing data
+            rowIndex = 1
+
+            for _, row in result_data.iterrows():
+                for col_num, value in enumerate(row):
+                    worksheet.write(rowIndex, col_num, value)
+
+                rowIndex += 1
+
+            workbook.close()
+
+            # Open the generated Excel file using subprocess
+            subprocess.run(['xdg-open', 'payroll_comp_1st_cut_off.xlsx'])
 
 
 
@@ -479,6 +520,76 @@ class Payrollcomputation():
         print("Sum of PHIC:{:,.2f}".format(result_data['PHIC'].sum()))
         print("Sum of HDMF:{:,.2f}".format(result_data['HDMF'].sum()))
         print("Sum of NET PAY:{:,.2f}".format(result_data['NET PAY'].sum()))
+
+
+        ans = input('Do you want to export to excel file ?: ').lower()
+
+        if ans == 'yes':
+            workbook = xlsxwriter.Workbook("payroll.xlsx")
+            worksheet = workbook.add_worksheet('payroll')
+
+            # Writing headers
+            headers = ['EMPLOYEE_ID', 'TOTAL_GROSS_PAY', 'GROSS_PAY', 'Employee Share', 'SSS PROVIDENT',
+                       'Employer Share', 'ECC-REMT', 'PHIC', 'HDMF', 'NET TAXABLE', 'TAX WITHHELD', 'NET PAY']
+
+            for col_num, header in enumerate(headers):
+                worksheet.write(0, col_num, header)
+
+            # worksheet.write('A1', 'EMPLOYEE ID'),
+            # worksheet.write('B1', 'TOTAL GROSS'),
+            # worksheet.write('C1', 'GROSS PAY'),
+            # worksheet.write('D1', 'EMPLOYEE SHARES'),
+            # worksheet.write('E1', 'SSS PROVIDENT')
+            # worksheet.write('F1', 'EMPLOYER SHARE')
+            # worksheet.write('G1', 'ECC-RMT')
+            # worksheet.write('H1', 'PHIC')
+            # worksheet.write('I1', 'HDMF')
+            # worksheet.write('J1', 'NET TAXABLE')
+            # worksheet.write('K1', 'TAX WITH HELD')
+            # worksheet.write('L1', 'NET PAY')
+
+            rowIndex = 2
+
+            for _, row in result_data.iterrows():
+                worksheet.write('A' + str(rowIndex), row['EMPLOYEE_ID'])
+                worksheet.write('B' + str(rowIndex), row['TOTAL_GROSS_PAY'])
+                worksheet.write('C' + str(rowIndex), row['GROSS_PAY_y'])
+                worksheet.write('D' + str(rowIndex), row['Employee Share'])
+                worksheet.write('E' + str(rowIndex), row['SSS PROVIDENT'])
+                worksheet.write('F' + str(rowIndex), row['Employer Share'])
+                worksheet.write('G' + str(rowIndex), row['ECC-REMT'])
+                worksheet.write('H' + str(rowIndex), row['PHIC'])
+                worksheet.write('I' + str(rowIndex), row['HDMF'])
+                worksheet.write('J' + str(rowIndex), row['NET TAXABLE'])
+                worksheet.write('K' + str(rowIndex), row['TAX WITHHELD'])
+                worksheet.write('L' + str(rowIndex), row['NET PAY'])
+
+            # worksheet.write('A' + str(rowIndex), result_data['EMPLOYEE_ID'])
+            # worksheet.write('B' + str(rowIndex), result_data['TOTAL_GROSS_PAY'])
+            # worksheet.write('C' + str(rowIndex), result_data['GROSS_PAY_y'])
+            # worksheet.write('D' + str(rowIndex), result_data['Employee Share'])
+            # worksheet.write('E' + str(rowIndex), result_data['SSS PROVIDENT'])
+            # worksheet.write('F' + str(rowIndex), result_data['Employer Share'])
+            # worksheet.write('G' + str(rowIndex), result_data['ECC-REMT'])
+            # worksheet.write('H' + str(rowIndex), result_data['PHIC'])
+            # worksheet.write('I' + str(rowIndex), result_data['HDMF'])
+            # worksheet.write('J' + str(rowIndex), result_data['NET TAXABLE'])
+            # worksheet.write('K' + str(rowIndex), result_data['TAX WITHHELD'])
+            # worksheet.write('L' + str(rowIndex), result_data['NET PAY'])
+
+                rowIndex += 1
+
+                # workbook.close()
+
+            workbook.close()
+
+            # Open the generated Excel file using subprocess
+            subprocess.run(['xdg-open', 'payroll.xlsx'])
+                # Open the generated Excel file using subprocess
+                # subprocess.run(['xdg-open', 'payroll.xlsx'])
+
+            # Open the generated Excel file
+            # startfile("payroll.xlsx")
 
 
 
