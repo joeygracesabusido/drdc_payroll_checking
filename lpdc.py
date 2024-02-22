@@ -10,6 +10,7 @@ from prettytable import PrettyTable
 
 import subprocess
 import xlsxwriter
+from os import startfile
 
 
 from datetime import date
@@ -589,7 +590,7 @@ class Payrollcomputation():
                 # subprocess.run(['xdg-open', 'payroll.xlsx'])
 
             # Open the generated Excel file
-            # startfile("payroll.xlsx")
+            startfile("payroll.xlsx")
 
 
 

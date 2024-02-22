@@ -6,9 +6,15 @@ import sys
 import platform
 import math
 
+
+from prettytable import PrettyTable
+from reportlab.lib.pagesizes import letter, landscape,legal
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
 from prettytable import PrettyTable
 
-# from os import startfile
+from os import startfile
 import subprocess
 import xlsxwriter
 
@@ -455,18 +461,7 @@ class Payrollcomputation():
             for col_num, header in enumerate(headers):
                 worksheet.write(0, col_num, header)
 
-            # worksheet.write('A1', 'EMPLOYEE ID'),
-            # worksheet.write('B1', 'TOTAL GROSS'),
-            # worksheet.write('C1', 'GROSS PAY'),
-            # worksheet.write('D1', 'EMPLOYEE SHARES'),
-            # worksheet.write('E1', 'SSS PROVIDENT')
-            # worksheet.write('F1', 'EMPLOYER SHARE')
-            # worksheet.write('G1', 'ECC-RMT')
-            # worksheet.write('H1', 'PHIC')
-            # worksheet.write('I1', 'HDMF')
-            # worksheet.write('J1', 'NET TAXABLE')
-            # worksheet.write('K1', 'TAX WITH HELD')
-            # worksheet.write('L1', 'NET PAY')
+         
 
             rowIndex = 2
 
@@ -484,19 +479,7 @@ class Payrollcomputation():
                 worksheet.write('K' + str(rowIndex), row['TAX WITHHELD'])
                 worksheet.write('L' + str(rowIndex), row['NET PAY'])
 
-            # worksheet.write('A' + str(rowIndex), result_data['EMPLOYEE_ID'])
-            # worksheet.write('B' + str(rowIndex), result_data['TOTAL_GROSS_PAY'])
-            # worksheet.write('C' + str(rowIndex), result_data['GROSS_PAY_y'])
-            # worksheet.write('D' + str(rowIndex), result_data['Employee Share'])
-            # worksheet.write('E' + str(rowIndex), result_data['SSS PROVIDENT'])
-            # worksheet.write('F' + str(rowIndex), result_data['Employer Share'])
-            # worksheet.write('G' + str(rowIndex), result_data['ECC-REMT'])
-            # worksheet.write('H' + str(rowIndex), result_data['PHIC'])
-            # worksheet.write('I' + str(rowIndex), result_data['HDMF'])
-            # worksheet.write('J' + str(rowIndex), result_data['NET TAXABLE'])
-            # worksheet.write('K' + str(rowIndex), result_data['TAX WITHHELD'])
-            # worksheet.write('L' + str(rowIndex), result_data['NET PAY'])
-
+           
                 rowIndex += 1
 
                 # workbook.close()
@@ -504,12 +487,86 @@ class Payrollcomputation():
             workbook.close()
 
             # Open the generated Excel file using subprocess
-            subprocess.run(['xdg-open', 'payroll.xlsx'])
+            # subprocess.run(['xdg-open', 'payroll.xlsx'])
                 # Open the generated Excel file using subprocess
                 # subprocess.run(['xdg-open', 'payroll.xlsx'])
 
             # Open the generated Excel file
-            # startfile("payroll.xlsx")
+            startfile("payroll.xlsx")
+
+        # Create a PDF
+            
+        # Calculate the sum of NET PAY
+            
+        total_gross_pay = result_data['GROSS_PAY_y'].sum()
+        total_phic = result_data['PHIC'].sum()
+        total_hdmf = result_data['HDMF'].sum()
+        grand_total_net_pay = result_data['NET PAY'].sum()
+
+        total_monthly_gross = result_data['TOTAL_GROSS_PAY'].sum()
+        total_emp_share = result_data['Employee Share'].sum()
+        total_sss_provident =  result_data['SSS PROVIDENT'].sum()
+       
+        total_ecc = result_data['ECC-REMT'].sum()
+        total_net_taxable = result_data['NET TAXABLE'].sum()
+
+        total_empr_share = result_data['Employer Share'].sum()
+
+        total_gross_pay = "{:,.2f}".format(total_gross_pay)
+        total_phic = "{:,.2f}".format(total_phic)
+        total_hdmf = "{:,.2f}".format(total_hdmf)
+        grand_total_net_pay = "{:,.2f}".format(grand_total_net_pay)
+
+        total_monthly_gross = "{:,.2f}".format(total_monthly_gross)
+        # total_emp_share = "{:,.2f}".format(total_emp_share)
+        # total_hdmf = "{:,.2f}".format(total_hdmf)
+        # total_sss_provident = "{:,.2f}".format(total_sss_provident)
+        # total_ecc = "{:,.2f}".format(total_ecc)
+        total_net_taxable = "{:,.2f}".format(total_net_taxable)
+
+        # Append a new row with the grand total
+        result_data = result_data._append({'EMPLOYEE_ID': 'Grand Total', 
+                                           'NET PAY': grand_total_net_pay,
+                                           'GROSS_PAY_y':total_gross_pay,
+                                           'PHIC':total_phic,
+                                           'HDMF':total_hdmf,
+                                           'TOTAL_GROSS_PAY':total_monthly_gross,
+                                           'Employee Share':total_emp_share,
+                                           'SSS PROVIDENT':total_sss_provident,
+                                           'ECC-REMT':total_ecc,
+                                           'NET TAXABLE':total_net_taxable,
+                                           'Employer Share':total_empr_share}, ignore_index=True)
+        pdf_filename = "payroll.pdf"
+        
+        doc = SimpleDocTemplate(pdf_filename, pagesize=landscape(legal), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
+
+        # doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
+
+        # Table data
+        data = [result_data.columns.tolist()] + result_data.values.tolist()
+
+        # Define the style for the table
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, -1), (-1, -1), colors.red),  # Set text color to red for the last row
+        ])
+
+        # Create the table
+        table = Table(data, style=style)
+
+        # Build the PDF
+        doc.build([table])
+
+        print(f"PDF created successfully: {pdf_filename}")
+        # # Open the generated PDF file using the default PDF viewer on Windows
+        # subprocess.run(['start', '', pdf_filename], shell=True)
+        startfile("payroll.pdf")
+
 
         lrcc_transaction()
         
