@@ -15,6 +15,7 @@ from typing import Optional, List
 
 from lpdc import lpdc_transaction
 from lrcc import lrcc_transaction
+from agua import agua_transaction
 
 @staticmethod
 def main_dashboard(): # this function is for displaying dashboard
@@ -23,7 +24,7 @@ def main_dashboard(): # this function is for displaying dashboard
             
                {"Code": '2000',"Transaction":'LDPC Transactions'},
                {"Code": '3000',"Transaction":'LRCC Transactions'},
-             
+               {"Code": '4000',"Transaction":'AGUA Transactions'},
             
            
            
@@ -50,6 +51,8 @@ def main_dashboard(): # this function is for displaying dashboard
     elif ans == '3000':
         return lrcc_transaction()
 
+    elif ans == '4000':
+        return agua_transaction()
     
 
     elif ans == 'x' or ans =='X':

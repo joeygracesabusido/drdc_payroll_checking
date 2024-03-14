@@ -6,6 +6,14 @@ import sys
 import platform
 import math
 
+
+from prettytable import PrettyTable
+from reportlab.lib.pagesizes import letter, landscape,legal
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
+from prettytable import PrettyTable
+
 from prettytable import PrettyTable
 
 import subprocess
@@ -270,13 +278,7 @@ class Payrollcomputation():
         
 
 
-        # Print or return the merged DataFrame
-        # print(result_data)
-
-
-        
-
-
+      
         # Create a pretty table and add rows
         table = PrettyTable(result_data.columns.tolist())  # Convert Index to list
         for _, row in result_data.iterrows():
@@ -316,7 +318,9 @@ class Payrollcomputation():
             workbook.close()
 
             # Open the generated Excel file using subprocess
-            subprocess.run(['xdg-open', 'payroll_comp_1st_cut_off.xlsx'])
+
+            startfile("payroll_comp_1st_cut_off.xlsx")
+            # subprocess.run(['xdg-open', 'payroll_comp_1st_cut_off.xlsx'])
 
 
 
